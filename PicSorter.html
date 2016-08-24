@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Сортировщик картинок</title>
+<style type = "text/css">
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.fixed {
+  background-color: #f60;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  overflow: auto;
+  display: block;
+}
+
+textarea {
+  width:100%;
+}
+
+div.panel {
+  //display:block;
+  float:left;
+  margin: 5px;
+}
+
+table.sort-table {
+//  display: none;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 1px solid black;
+  border-spacing: 5px;
+  table-layout: fixed;
+  z-index:-1;
+  background-color:white;
+}
+
+table.sort-table td {
+  width: 50%;
+  height: 50%;
+  border: 1px solid black;
+  background-position: center, center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  //background-image: url("https://siwatcher.ru/public/assets/img/myrss.png")
+}
+</style>
+<script type="text/javascript" src="PicSorter.js">
+</script>
+</head>
+<body>
+
+<div class="fixed">
+<form>
+<div class="panel" style="min-width: 95%">
+<textarea id="source" wrap="off" rows=4 placeholder="Исходный список картинок">
+</textarea>
+</div>
+<div class="panel" style="min-width: 95%">
+<textarea id="result" wrap="off" rows=4 placeholder="Отсортированный список">
+</textarea>
+</div>
+<br>
+<div class="panel" style="min-width: 95%">
+<div class="panel">
+<select id="result1" size=15 style="max-width:300px" onchange="document.getElementById('prevSrc').src=this.value">
+<option>-----------------</option>
+</select>
+</div>
+<div class="panel">
+<img src="" id="prevSrc" style="max-width:500px;max-heigth:500px">
+</div>
+</div>
+<div class="panel" style="min-width: 100px">
+<input type="button" name="start" id="start_" onclick="onStart()" value="Начать сортировку">
+</div>
+</form>
+</div>
+
+<table id="sort-table" class="sort-table">
+<tr>
+<td id="i1">
+1
+</td>
+<td id="i2">
+2
+</td>
+</tr>
+<tr>
+<td id="i3">
+3
+</td>
+<td id="i4">
+4
+</td>
+</tr>
+</table>
+
+</body>
+</html>

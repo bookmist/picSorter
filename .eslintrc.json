@@ -1,0 +1,23 @@
+{
+  "extends": "eslint-config-standard",
+  "installedESLint": true,
+  "plugins": [
+    "standard"
+  ],
+  "env": {
+    "browser": true
+  },
+  "rules": {
+    "semi": [
+      "error",
+      "always",
+      {
+        "omitLastInOneLineBlock": true
+      }
+    ],
+    "quotes": [
+      "error",
+      "single"
+    ]
+  }
+}
