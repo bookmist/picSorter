@@ -22,6 +22,7 @@ function loadSource () {
   } else {
     alert('error!');
   }
+  localStorage.setItem('source',JSON.stringify(source));
 };
 
 function initRel () {
@@ -37,15 +38,18 @@ function uniq (a) {
   });
 }
 
-function addRel (aMax, aMin) {
+function addRel (aMax, aMin, r) {
   if (aMin === undefined) { return undefined };
   if (aMax === undefined) { return undefined };
+  var t1,t2;
   // 1. прямое добавление
   if (rel[aMax].aLess.indexOf(aMin) < 0) {
-    rel[aMax].aLess.push(aMin);
+    rel[aMax].aLess.push(aMin);    
+    t1=1;
   }
   if (rel[aMin].aMore.indexOf(aMax) < 0) {
     rel[aMin].aMore.push(aMax);
+    t2=1;
   }
   // все элементы больше макс (rel[aMax].aMore) также больше мин (надо добавить в (rel[aMin].aMore))
   rel[aMin].aMore.push.apply(rel[aMax].aMore);
@@ -55,10 +59,16 @@ function addRel (aMax, aMin) {
   uniq(rel[aMax].aLess);
   // aMax>aMin
   // элемент макс больше каждого элемента меньше мин
-  rel[aMin].aLess.forEach(function (item) { addRel(aMax, item) });
+  if (r !== 1) {
+  uniq(rel[aMin].aLess);
+    rel[aMin].aLess.forEach(function (item) { addRel(aMax, item, 1) });
+  }
 
   // элемент мин меньше любого элемента больше макс
-  rel[aMax].aMore.forEach(function (item) { addRel(item, aMin) });
+  if (r !== 1) {
+  uniq(rel[aMax].aMore);
+    rel[aMax].aMore.forEach(function (item) { addRel(item, aMin, 1) });
+  }
 };
 
 function checkRel (a1, a2) {
@@ -74,17 +84,20 @@ function onCellClick (a1, a2, a3, a4) {
   addRel(a1, a2);
   addRel(a1, a3);
   addRel(a1, a4);
+  //localStorage.setItem('rel1',JSON.stringify(rel));
+  localforage.setItem('rel',JSON.stringify(rel), function(err, value) {
+    console.log(err);
+  });
   var res = sort();
-  if (res !== undefined) {
-    fillResult(res);
-  };
+  fillResult(res);
 }
 
 function sortUISetPic (idx, a1, a2, a3, a4) {
   var sElem = document.getElementById(idx);
   if ((typeof source[a1] === 'string') && (source[a1] !== '')) {
     sElem.style.backgroundImage = 'url(' + source[a1] + ')';
-    sElem.innerHTML = '&nbsp;';
+    //sElem.innerHTML = '<img class="si" src="'+source[a1]+'">';
+    sElem.innerHTML = a1 + '&nbsp;';
     sElem.onclick = function x () { onCellClick(a1, a2, a3, a4) };
   } else {
     sElem.style.backgroundImage = '';
@@ -101,7 +114,7 @@ function SortUI (a1, a2, a3, a4) {
   document.getElementById('sort-table').style.zIndex = 1;
 }
 
-function compare (a1, a2, a3, a4) {
+function compare (a1, a2, a3, a4, noUI) {
   var t;
   var i;
   var args = [a1, a2, a3, a4];
@@ -130,7 +143,9 @@ function compare (a1, a2, a3, a4) {
     }
   }
   if (c <= 1) { return t + 1 };
-  SortUI(args[0], args[1], args[2], args[3]);
+  if (!noUI){
+    SortUI(args[0], args[1], args[2], args[3]);
+  }
   return 0;
 }
 
@@ -155,14 +170,14 @@ function sort () {
   // получаем индекс последнего корня, по эту позицию сортируем деревья.
   var vTo = Math.round((len + 1) / 3);
   if ((len + 1) % 3 > 0) { vTo += 1 };
-  while (a[0] !== undefined) {
+  while (res.length<a.length){ //(a[0] !== undefined) {
     // сортируем с конца в начало
     for (i = vTo; i >= 0; i--) {
       // ставим наибольший элемент куста в его корень
       // куст - часть дерева из родителя и его прямых потомков
       var j = compare(a[i], a[i * 3 + 1], a[i * 3 + 2], a[i * 3 + 3]);
       if (j === 0) {
-        return undefined;
+        return res;
       };
       if (j > 1) {
         var t = a[i];
@@ -211,8 +226,8 @@ function sort () {
       // alert('end');
     };
     // меняем его с корнем
-    a[0] = a[bestChangeId];
-    a[bestChangeId] = undefined;
+  //  a[0] = a[bestChangeId];
+  //  a[bestChangeId] = undefined;
     // запускаем цикл заново
   }
   return res;
@@ -229,13 +244,58 @@ function fillResult (res) {
   document.getElementById('result1').innerHTML = list;
 };
 
+function recompileRel(){
+  rel.forEach(function(item,i){
+    uniq(item.aMore);
+    item.aMore.forEach(function(item1,i1){rel[item1].aLess.push(i)})
+    uniq(item.aLess);
+    item.aLess.forEach(function(item1,i1){rel[item1].aMore.push(i)})
+  })
+  rel.forEach(function(item,i){
+    uniq(item.aMore);
+    uniq(item.aLess);
+  })
+};
+
 /* eslint-disable no-unused-vars */
 function onStart () {
 /* eslint-enable no-unused-vars */
-  loadSource();
-  initRel();
-  var res = sort();
-  if (res !== undefined) {
-    fillResult(res);
+  if (localStorage.getItem('source') === null) {
+    loadSource();
+  } else {
+    source = JSON.parse( localStorage.getItem('source') );
   }
+  localforage.getItem('rel', function(err,value) {
+    if (value === null) {
+      if (localStorage.getItem('rel1') === null) {
+        initRel();
+      } else {
+        rel = JSON.parse( localStorage.getItem('rel1') );
+      }
+    } else {
+      rel = JSON.parse( value );
+    }
+    
+    var res = sort();
+    fillResult(res);
+
+    //console.log('we just read ' + value);
+  });
+/*
+  if (localStorage.getItem('rel1') === null) {
+    initRel();
+  } else {
+    //localStorage.removeItem('rel');
+    rel = JSON.parse( localStorage.getItem('rel1') );
+    //recompileRel();
+  }*/
+//  var res = sort();
+//  fillResult(res);
 };
+/*
+window.addEventListener('keydown',function(e){
+	//if (e.which==106) {
+	  document.getElementById('sort-table').style.zIndex = -1;			
+	//}
+	
+	},false)*/
