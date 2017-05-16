@@ -4,6 +4,26 @@ var source = []; // входной массив ссылок на картинк
 var rel = []; // массив структур, обозначающих отношения картинок
 // структура состоит из двух массивов; aMore и aLess в которых хранятся индексы картинок больше и меньше заданной
 
+//init statistics
+var compares = 0;
+var compares2 = 0;
+var compares3 = 0;
+var compares4 = 0;
+
+function initStat(){
+ compares = 0;
+ compares2 = 0;
+ compares3 = 0;
+ compares4 = 0;
+};
+
+function showStat(){
+  console.log('Всего сравнений: ' + compares.toString());
+  console.log('Cравнений 2 значений: ' + compares2.toString());
+  console.log('Cравнений 3 значений: ' + compares3.toString());
+  console.log('Cравнений 4 значений: ' + compares4.toString());
+  }
+
 function loadSource () {
   var sElem = document.getElementById('source');
   if (sElem !== null) {
@@ -84,25 +104,37 @@ function onCellClick (a1, a2, a3, a4) {
   addRel(a1, a2);
   addRel(a1, a3);
   addRel(a1, a4);
-  //localStorage.setItem('rel1',JSON.stringify(rel));
+  //localStorage.setItem('rel1',JSON.stringify(rel));       
+  /*
   localforage.setItem('rel',JSON.stringify(rel), function(err, value) {
     console.log(err);
-  });
+  });                                                         */
+  compares = compares + 1;
   var res = sort();
-  fillResult(res);
+  //fillResult(res);
 }
 
+function nvl(val_,nullVal){
+  if (val_===undefined){
+  return nullVal;} else {return val_;};
+};
+
 function sortUISetPic (idx, a1, a2, a3, a4) {
-  var sElem = document.getElementById(idx);
+  var sElem = document.getElementById(idx); 
   if ((typeof source[a1] === 'string') && (source[a1] !== '')) {
     sElem.style.backgroundImage = 'url(' + source[a1] + ')';
     //sElem.innerHTML = '<img class="si" src="'+source[a1]+'">';
-    sElem.innerHTML = a1 + '&nbsp;';
+    sElem.innerHTML = source[a1] + '&nbsp;';
     sElem.onclick = function x () { onCellClick(a1, a2, a3, a4) };
   } else {
     sElem.style.backgroundImage = '';
     sElem.innerHTML = 'Нет&nbsp;изображения';
   }
+  /*Для тестирования*/
+  if ((source[a1]>=nvl(source[a2],-1)) && (source[a1]>=nvl(source[a3],-1)) && (source[a1]>=nvl(source[a4],-1)) ) {
+    setTimeout(function x () { onCellClick(a1, a2, a3, a4) },1);
+  }
+  /* */  
 }
 
 function SortUI (a1, a2, a3, a4) {
@@ -111,7 +143,15 @@ function SortUI (a1, a2, a3, a4) {
   sortUISetPic('i2', a2, a1, a3, a4);
   sortUISetPic('i3', a3, a2, a1, a4);
   sortUISetPic('i4', a4, a2, a3, a1);
-  document.getElementById('sort-table').style.zIndex = 1;
+  //document.getElementById('sort-table').style.zIndex = 1;
+  var t=0;
+  if (((typeof source[a1] === 'string') && (source[a1] !== ''))) {t=t+1;}; 
+  if (((typeof source[a2] === 'string') && (source[a2] !== ''))) {t=t+1;}; 
+  if (((typeof source[a3] === 'string') && (source[a3] !== ''))) {t=t+1;}; 
+  if (((typeof source[a4] === 'string') && (source[a4] !== ''))) {t=t+1;}; 
+  if (t===2){compares2=compares2+1;};
+  if (t===3){compares3=compares3+1;};
+  if (t===4){compares4=compares4+1;};
 }
 
 function compare (a1, a2, a3, a4, noUI) {
@@ -203,9 +243,9 @@ function sort () {
     // получаем индекс последнего корня, по эту позицию сортируем деревья.
     vTo = Math.round((len + 1) / 3);
     if ((len + 1) % 3 > 0) { vTo += 1 };
-
+   
     var bestChangeId = len - 1;
-    for (;a[bestChangeId] === undefined && bestChangeId > vTo; bestChangeId--) {};
+  /*  for (;a[bestChangeId] === undefined && bestChangeId > vTo; bestChangeId--) {};
     var bestChangeVal = -len;
     for (i = vTo; i < len; i++) {
       // считаем уровень качества элемента
@@ -224,12 +264,15 @@ function sort () {
     }
     if (a[bestChangeId] === undefined) {
       // alert('end');
-    };
+    };   */      
+    //var bestChangeId = len;
     // меняем его с корнем
   //  a[0] = a[bestChangeId];
   //  a[bestChangeId] = undefined;
     // запускаем цикл заново
-  }
+  }    
+  showStat(); 
+  fillResult(res)
   return res;
 };
 
@@ -257,9 +300,18 @@ function recompileRel(){
   })
 };
 
-/* eslint-disable no-unused-vars */
 function onStart () {
+initStat()
+    loadSource();     
+            initRel();   
+                var res = sort();
+    fillResult(res);
+    };
+
+/* eslint-disable no-unused-vars */
+function onStart_ () {
 /* eslint-enable no-unused-vars */
+  
   if (localStorage.getItem('source') === null) {
     loadSource();
   } else {
@@ -275,7 +327,7 @@ function onStart () {
     } else {
       rel = JSON.parse( value );
     }
-    
+                 
     var res = sort();
     fillResult(res);
 
