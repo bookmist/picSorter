@@ -110,7 +110,9 @@ function onCellClick (a1, a2, a3, a4) {
     console.log(err);
   });                                                         */
   compares = compares + 1;
-  var res = sort();
+    if (sortObj.sort_()){
+  sortObj.fin_();
+  };
   //fillResult(res);
 }
 
@@ -189,7 +191,117 @@ function compare (a1, a2, a3, a4, noUI) {
   return 0;
 }
 
-function sort () {
+var sortObj={
+  res:undefined,
+  len:undefined,
+  a:undefined,
+  i:undefined,
+  vTo:undefined,
+  
+  init_:function(){ 
+   this.res = [];
+  // заполняем массив индексов для сортировки
+   this.len = source.length;
+   this.a = new Array(this.len);
+   
+  for (this.i = 0; this.i < this.len; this.i++) {
+    this.a[this.i] = this.i;
+  };
+  for (this.i = this.len - 1; this.i > 0; this.i--) {
+    if (this.a[this.i] === undefined) {
+      this.len -= 1;
+    } else {
+      break;
+    };
+  };
+  // len += 1;
+  // len = a.length;
+  // получаем индекс последнего корня, по эту позицию сортируем деревья.
+   this.vTo = Math.round((this.len + 1) / 3);
+  if ((this.len + 1) % 3 > 0) { this.vTo += 1 };  
+  this.i = this.vTo;
+  },
+  
+  sort_:function(){
+    while (this.res.length<this.a.length){ //(a[0] !== undefined) {
+    // сортируем с конца в начало
+    for (; this.i >= 0; this.i--) {
+      // ставим наибольший элемент куста в его корень
+      // куст - часть дерева из родителя и его прямых потомков
+      var j = compare(this.a[this.i], this.a[this.i * 3 + 1], this.a[this.i * 3 + 2], this.a[this.i * 3 + 3]);
+      if (j === 0) {
+        return false;
+      };
+      if (j > 1) {
+        var t = this.a[this.i];
+        this.a[this.i] = this.a[this.i * 3 - 1 + j];
+        this.a[this.i * 3 - 1 + j] = t;
+      };
+    }
+    if (this.a[0] === undefined) { continue };
+    // теперь в корне дерева у нас наибольший элемент
+    // кладем его в result
+    this.res.push(this.a[0]);
+    // затираем корень
+    this.a[0] = undefined;
+    // находим в основании дерева наилучший элемент для обмена
+    for (this.i = this.len - 1; this.i > 0; this.i--) {
+      if (this.a[this.i] === undefined) {
+        this.len -= 1;
+      } else {
+        break;
+      };
+    };
+    // len += 1;
+    // получаем индекс последнего корня, по эту позицию сортируем деревья.
+    this.vTo = Math.round((this.len + 1) / 3);
+    if ((this.len + 1) % 3 > 0) { this.vTo += 1 };
+   
+    var bestChangeId = this.len - 1;    
+    for (;this.a[bestChangeId] === undefined && bestChangeId > this.vTo; bestChangeId--) {};
+    var bestChangeVal = -this.len;
+    for (var i = this.vTo; i < this.len; i++) {
+      // считаем уровень качества элемента
+      // лучший это тот, у которого больше всего aLess и меньше всего aMore
+      if (this.a[i] === undefined) { continue };
+      var t1 = rel[this.a[i]].aLess;
+      if (Array.isArray(t1)) { t1 = t1.length } else { t1 = 0 };
+      var t2 = rel[this.a[i]].aMore;
+      if (Array.isArray(t2)) { t2 = t2.length } else { t2 = 0 };
+      var chVal = t1 - t2;
+      //var chVal = t2 - t1;
+      // var chVal = rel[a[i]].aLess.length-rel[a[i]].aMore.length;
+      if (chVal >= bestChangeVal) {
+        bestChangeVal = chVal;
+        bestChangeId = i;
+      }
+    }
+    if (this.a[bestChangeId] === undefined) {
+      // alert('end');
+    };   /* */      
+    // меняем его с корнем
+    this.a[0] = this.a[bestChangeId];
+    this.a[bestChangeId] = undefined;
+    // запускаем цикл заново  
+    this.i = this.vTo;
+  } 
+  return true;   
+ }, 
+ fin_:function(){
+  showStat(); 
+  fillResult(this.res)
+ }
+}
+     
+function sort(){
+  sortObj.init_();
+  if (sortObj.sort_()){
+  sortObj.fin_();
+  };
+  
+}
+
+function sort_old () {
   var res = [];
   // заполняем массив индексов для сортировки
   var len = source.length;
@@ -265,10 +377,9 @@ function sort () {
     if (a[bestChangeId] === undefined) {
       // alert('end');
     };   */      
-    //var bestChangeId = len;
     // меняем его с корнем
-  //  a[0] = a[bestChangeId];
-  //  a[bestChangeId] = undefined;
+    a[0] = a[bestChangeId];
+    a[bestChangeId] = undefined;
     // запускаем цикл заново
   }    
   showStat(); 
