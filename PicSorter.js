@@ -3,26 +3,29 @@
 var source = []; // входной массив ссылок на картинки
 var rel = []; // массив структур, обозначающих отношения картинок
 // структура состоит из двух массивов; aMore и aLess в которых хранятся индексы картинок больше и меньше заданной
+var stats=[];
 
-//init statistics
-var compares = 0;
-var compares2 = 0;
-var compares3 = 0;
-var compares4 = 0;
+var stat = {
 
-function initStat(){
- compares = 0;
- compares2 = 0;
- compares3 = 0;
- compares4 = 0;
-};
+ compares: 0,
+ compares2: 0,
+ compares3: 0,
+ compares4: 0,
 
-function showStat(){
-  console.log('Всего сравнений: ' + compares.toString());
-  console.log('Cравнений 2 значений: ' + compares2.toString());
-  console.log('Cравнений 3 значений: ' + compares3.toString());
-  console.log('Cравнений 4 значений: ' + compares4.toString());
+initStat:function (){
+ this.compares = 0;
+ this.compares2 = 0;
+ this.compares3 = 0;
+ this.compares4 = 0;
+},
+
+showStat:function showStat(){
+  console.log('Всего сравнений: ' + this.compares.toString());
+  console.log('Cравнений 2 значений: ' + this.compares2.toString());
+  console.log('Cравнений 3 значений: ' + this.compares3.toString());
+  console.log('Cравнений 4 значений: ' + this.compares4.toString());
   }
+}
 
 function loadSource () {
   var sElem = document.getElementById('source');
@@ -109,7 +112,6 @@ function onCellClick (a1, a2, a3, a4) {
   localforage.setItem('rel',JSON.stringify(rel), function(err, value) {
     console.log(err);
   });                                                         */
-  compares = compares + 1;
     if (sortObj.sort_()){
   sortObj.fin_();
   };
@@ -151,9 +153,10 @@ function SortUI (a1, a2, a3, a4) {
   if (((typeof source[a2] === 'string') && (source[a2] !== ''))) {t=t+1;}; 
   if (((typeof source[a3] === 'string') && (source[a3] !== ''))) {t=t+1;}; 
   if (((typeof source[a4] === 'string') && (source[a4] !== ''))) {t=t+1;}; 
-  if (t===2){compares2=compares2+1;};
-  if (t===3){compares3=compares3+1;};
-  if (t===4){compares4=compares4+1;};
+  if (t===2){stat.compares2=stat.compares2+1;};
+  if (t===3){stat.compares3=stat.compares3+1;};
+  if (t===4){stat.compares4=stat.compares4+1;};
+  stat.compares = stat.compares + 1;
 }
 
 function compare (a1, a2, a3, a4, noUI) {
@@ -204,11 +207,11 @@ var sortObj={
    this.len = source.length;
    this.a = new Array(this.len);
    
-  for (this.i = 0; this.i < this.len; this.i++) {
-    this.a[this.i] = this.i;
+  for (var i = 0; i < this.len; i++) {
+    this.a[i] = i;
   };
-  for (this.i = this.len - 1; this.i > 0; this.i--) {
-    if (this.a[this.i] === undefined) {
+  for (i = this.len - 1; i > 0; i--) {
+    if (this.a[i] === undefined) {
       this.len -= 1;
     } else {
       break;
@@ -243,10 +246,11 @@ var sortObj={
     // кладем его в result
     this.res.push(this.a[0]);
     // затираем корень
+    //this.a.splice(0, 1);
     this.a[0] = undefined;
     // находим в основании дерева наилучший элемент для обмена
-    for (this.i = this.len - 1; this.i > 0; this.i--) {
-      if (this.a[this.i] === undefined) {
+    for (var i = this.len - 1; i > 0; i--) {
+      if (this.a[i] === undefined) {
         this.len -= 1;
       } else {
         break;
@@ -256,8 +260,8 @@ var sortObj={
     // получаем индекс последнего корня, по эту позицию сортируем деревья.
     this.vTo = Math.round((this.len + 1) / 3);
     if ((this.len + 1) % 3 > 0) { this.vTo += 1 };
-   
     var bestChangeId = this.len - 1;    
+     
     for (;this.a[bestChangeId] === undefined && bestChangeId > this.vTo; bestChangeId--) {};
     var bestChangeVal = -this.len;
     for (var i = this.vTo; i < this.len; i++) {
@@ -283,12 +287,13 @@ var sortObj={
     this.a[0] = this.a[bestChangeId];
     this.a[bestChangeId] = undefined;
     // запускаем цикл заново  
+    stats.push([stat.compares,stat.compares2,stat.compares3,stat.compares4]);
     this.i = this.vTo;
   } 
   return true;   
  }, 
  fin_:function(){
-  showStat(); 
+  stat.showStat(); 
   fillResult(this.res)
  }
 }
@@ -298,94 +303,8 @@ function sort(){
   if (sortObj.sort_()){
   sortObj.fin_();
   };
-  
+  return sortObj.res;
 }
-
-function sort_old () {
-  var res = [];
-  // заполняем массив индексов для сортировки
-  var len = source.length;
-  var a = new Array(len);
-  var i;
-  for (i = 0; i < len; i++) {
-    a[i] = i;
-  };
-  for (i = len - 1; i > 0; i--) {
-    if (a[i] === undefined) {
-      len -= 1;
-    } else {
-      break;
-    };
-  };
-  // len += 1;
-  // len = a.length;
-  // получаем индекс последнего корня, по эту позицию сортируем деревья.
-  var vTo = Math.round((len + 1) / 3);
-  if ((len + 1) % 3 > 0) { vTo += 1 };
-  while (res.length<a.length){ //(a[0] !== undefined) {
-    // сортируем с конца в начало
-    for (i = vTo; i >= 0; i--) {
-      // ставим наибольший элемент куста в его корень
-      // куст - часть дерева из родителя и его прямых потомков
-      var j = compare(a[i], a[i * 3 + 1], a[i * 3 + 2], a[i * 3 + 3]);
-      if (j === 0) {
-        return res;
-      };
-      if (j > 1) {
-        var t = a[i];
-        a[i] = a[i * 3 - 1 + j];
-        a[i * 3 - 1 + j] = t;
-      };
-    }
-    if (a[0] === undefined) { continue };
-    // теперь в корне дерева у нас наибольший элемент
-    // кладем его в result
-    res.push(a[0]);
-    // затираем корень
-    a[0] = undefined;
-    // находим в основании дерева наилучший элемент для обмена
-    for (i = len - 1; i > 0; i--) {
-      if (a[i] === undefined) {
-        len -= 1;
-      } else {
-        break;
-      };
-    };
-    // len += 1;
-    // получаем индекс последнего корня, по эту позицию сортируем деревья.
-    vTo = Math.round((len + 1) / 3);
-    if ((len + 1) % 3 > 0) { vTo += 1 };
-   
-    var bestChangeId = len - 1;
-  /*  for (;a[bestChangeId] === undefined && bestChangeId > vTo; bestChangeId--) {};
-    var bestChangeVal = -len;
-    for (i = vTo; i < len; i++) {
-      // считаем уровень качества элемента
-      // лучший это тот, у которого больше всего aLess и меньше всего aMore
-      if (a[i] === undefined) { continue };
-      var t1 = rel[a[i]].aLess;
-      if (Array.isArray(t1)) { t1 = t1.length } else { t1 = 0 };
-      var t2 = rel[a[i]].aMore;
-      if (Array.isArray(t2)) { t2 = t2.length } else { t2 = 0 };
-      var chVal = t1 - t2;
-      // var chVal = rel[a[i]].aLess.length-rel[a[i]].aMore.length;
-      if (chVal >= bestChangeVal) {
-        bestChangeVal = chVal;
-        bestChangeId = i;
-      }
-    }
-    if (a[bestChangeId] === undefined) {
-      // alert('end');
-    };   */      
-    // меняем его с корнем
-    a[0] = a[bestChangeId];
-    a[bestChangeId] = undefined;
-    // запускаем цикл заново
-  }    
-  showStat(); 
-  fillResult(res)
-  return res;
-};
 
 function fillResult (res) {
   var txt = '';
@@ -396,6 +315,8 @@ function fillResult (res) {
   });
   document.getElementById('result').value = txt;
   document.getElementById('result1').innerHTML = list;
+  
+  document.getElementById('logs').value = stats.toString();
 };
 
 function recompileRel(){
@@ -412,7 +333,7 @@ function recompileRel(){
 };
 
 function onStart () {
-initStat()
+stat.initStat()
     loadSource();     
             initRel();   
                 var res = sort();
