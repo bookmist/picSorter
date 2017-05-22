@@ -5,6 +5,64 @@ var rel = []; // массив структур, обозначающих отн�
 // структура состоит из двух массивов; aMore и aLess в которых хранятся индексы картинок больше и меньше заданной
 var stats=[];
 
+var relations={
+  rel=[];
+  init:function(count){
+    rel = [];
+    for(;i--;i>0){
+      rel.push({aMore: [], aLess: []});
+    }
+  },
+  
+  uniq:function (a) {
+    return a.sort().filter(function (item, pos, ary) {
+      return !pos || item !== ary[pos - 1];
+    });
+  },
+  
+  add:function (aMax, aMin, r) {
+    if (aMin === undefined) { return undefined };
+    if (aMax === undefined) { return undefined };
+    var t1,t2;
+    // 1. прямое добавление
+    if (this.rel[aMax].aLess.indexOf(aMin) < 0) {
+      this.rel[aMax].aLess.push(aMin);    
+      t1=1;
+    }
+    if (this.rel[aMin].aMore.indexOf(aMax) < 0) {
+      this.rel[aMin].aMore.push(aMax);
+      t2=1;
+    }
+    // все элементы больше макс (rel[aMax].aMore) также больше мин (надо добавить в (rel[aMin].aMore))
+    this.rel[aMin].aMore.push.apply(this.rel[aMax].aMore);
+    this.uniq(this.rel[aMin].aMore);
+    // все элементы меньше мин также меньше макс
+    this.rel[aMax].aLess.push.apply(this.rel[aMin].aLess);
+    this.uniq(this.rel[aMax].aLess);
+    // aMax>aMin
+    // элемент макс больше каждого элемента меньше мин
+    if (r !== 1) {
+    this.uniq(this.rel[aMin].aLess);
+      this.rel[aMin].aLess.forEach(function (item) { this.addRel(aMax, item, 1) });
+    }
+  
+    // элемент мин меньше любого элемента больше макс
+    if (r !== 1) {
+    this.uniq(this.rel[aMax].aMore);
+      this.rel[aMax].aMore.forEach(function (item) { this.addRel(item, aMin, 1) });
+    }
+  },
+  
+  check:function (a1, a2) {
+    if (this.rel[a1].aLess.indexOf(a2) >= 0) { return 1 };
+    if (this.rel[a1].aMore.indexOf(a2) >= 0) { return -1 };
+    if (this.rel[a2].aLess.indexOf(a1) >= 0) { return -1 };
+    if (this.rel[a2].aMore.indexOf(a1) >= 0) { return 1 };
+    return 0;
+  }
+  
+}
+
 var stat = {
 
  compares: 0,
@@ -92,6 +150,14 @@ function addRel (aMax, aMin, r) {
   uniq(rel[aMax].aMore);
     rel[aMax].aMore.forEach(function (item) { addRel(item, aMin, 1) });
   }
+  check:function (a1, a2) {
+    if (rel[a1].aLess.indexOf(a2) >= 0) { return 1 };
+    if (rel[a1].aMore.indexOf(a2) >= 0) { return -1 };
+    if (rel[a2].aLess.indexOf(a1) >= 0) { return -1 };
+    if (rel[a2].aMore.indexOf(a1) >= 0) { return 1 };
+    return 0;
+  }
+  
 };
 
 function checkRel (a1, a2) {
