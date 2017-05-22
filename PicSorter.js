@@ -1,16 +1,17 @@
 'use strict';
 //global variables
 var source = []; // входной массив ссылок на картинки
-var rel = []; // массив структур, обозначающих отношения картинок
+//var rel = []; // массив структур, обозначающих отношения картинок
 // структура состоит из двух массивов; aMore и aLess в которых хранятся индексы картинок больше и меньше заданной
 var stats=[];
 
 var relations={
-  rel=[];
+  rel:[],
+  
   init:function(count){
-    rel = [];
-    for(;i--;i>0){
-      rel.push({aMore: [], aLess: []});
+    this.rel = [];
+    for(;count--;count>0){
+      this.rel.push({aMore: [], aLess: []});
     }
   },
   
@@ -40,16 +41,17 @@ var relations={
     this.rel[aMax].aLess.push.apply(this.rel[aMin].aLess);
     this.uniq(this.rel[aMax].aLess);
     // aMax>aMin
+    var self = this;
     // элемент макс больше каждого элемента меньше мин
     if (r !== 1) {
     this.uniq(this.rel[aMin].aLess);
-      this.rel[aMin].aLess.forEach(function (item) { this.addRel(aMax, item, 1) });
+      this.rel[aMin].aLess.forEach(function (item) { self.add(aMax, item, 1) });
     }
   
     // элемент мин меньше любого элемента больше макс
     if (r !== 1) {
     this.uniq(this.rel[aMax].aMore);
-      this.rel[aMax].aMore.forEach(function (item) { this.addRel(item, aMin, 1) });
+      this.rel[aMax].aMore.forEach(function (item) { self.add(item, aMin, 1) });
     }
   },
   
@@ -105,7 +107,7 @@ function loadSource () {
   }
   localStorage.setItem('source',JSON.stringify(source));
 };
-
+/*
 function initRel () {
   rel = [];
   source.forEach(function (item, i) {
@@ -167,12 +169,12 @@ function checkRel (a1, a2) {
   if (rel[a2].aMore.indexOf(a1) >= 0) { return 1 };
   return 0;
 }
-
+*/
 function onCellClick (a1, a2, a3, a4) {
   document.getElementById('sort-table').style.zIndex = -1;
-  addRel(a1, a2);
-  addRel(a1, a3);
-  addRel(a1, a4);
+  relations.add(a1, a2);
+  relations.add(a1, a3);
+  relations.add(a1, a4);
   //localStorage.setItem('rel1',JSON.stringify(rel));       
   /*
   localforage.setItem('rel',JSON.stringify(rel), function(err, value) {
@@ -232,7 +234,7 @@ function compare (a1, a2, a3, a4, noUI) {
   for (i = args.length - 1; i >= 0; i--) {
     for (var j = args.length - 1; j >= 0; j--) {
       if (i !== j && args[i] !== undefined && args[j] !== undefined) {
-        t = checkRel(args[i], args[j]);
+        t = relations.check(args[i], args[j]);
         if (t !== 0) {
           if (t > 0) {
             // args.splice(j,1);
@@ -334,13 +336,13 @@ var sortObj={
       // считаем уровень качества элемента
       // лучший это тот, у которого больше всего aLess и меньше всего aMore
       if (this.a[i] === undefined) { continue };
-      var t1 = rel[this.a[i]].aLess;
+      var t1 = relations.rel[this.a[i]].aLess;
       if (Array.isArray(t1)) { t1 = t1.length } else { t1 = 0 };
-      var t2 = rel[this.a[i]].aMore;
+      var t2 = relations.rel[this.a[i]].aMore;
       if (Array.isArray(t2)) { t2 = t2.length } else { t2 = 0 };
       var chVal = t1 - t2;
       //var chVal = t2 - t1;
-      // var chVal = rel[a[i]].aLess.length-rel[a[i]].aMore.length;
+      // var chVal = relations.rel[a[i]].aLess.length-relations.rel[a[i]].aMore.length;
       if (chVal >= bestChangeVal) {
         bestChangeVal = chVal;
         bestChangeId = i;
@@ -384,7 +386,7 @@ function fillResult (res) {
   
   document.getElementById('logs').value = stats.toString();
 };
-
+/*
 function recompileRel(){
   rel.forEach(function(item,i){
     uniq(item.aMore);
@@ -397,14 +399,14 @@ function recompileRel(){
     uniq(item.aLess);
   })
 };
-
+*/
 function onStart () {
-stat.initStat()
-    loadSource();     
-            initRel();   
-                var res = sort();
-    fillResult(res);
-    };
+  stat.initStat()
+  loadSource();     
+  relations.init(source.length);   
+  var res = sort();
+  fillResult(res);
+};
 
 /* eslint-disable no-unused-vars */
 function onStart_ () {
@@ -418,12 +420,12 @@ function onStart_ () {
   localforage.getItem('rel', function(err,value) {
     if (value === null) {
       if (localStorage.getItem('rel1') === null) {
-        initRel();
+        relations.init();
       } else {
-        rel = JSON.parse( localStorage.getItem('rel1') );
+        relations.rel = JSON.parse( localStorage.getItem('rel1') );
       }
     } else {
-      rel = JSON.parse( value );
+      relations.rel = JSON.parse( value );
     }
                  
     var res = sort();
