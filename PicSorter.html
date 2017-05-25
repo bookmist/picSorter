@@ -57,13 +57,14 @@ img.si {
     vertical-align: middle;
 }
 </style>
+<script type="text/javascript" src="FileSaver.js"></script>
 <script type="text/javascript" src="localforage.nopromises.js"></script>
 <script type="text/javascript" src="PicSorter.js"></script>
 
 </head>
 <body>
 
-<div class="fixed">
+<div class="fixed" id="fixed">
 <form>
 <div class="panel" style="min-width: 95%">
 <textarea id="source" wrap="off" rows=4 placeholder="Исходный список картинок">
@@ -86,6 +87,7 @@ img.si {
 </div>
 <div class="panel" style="min-width: 100px">
 <input type="button" name="start" id="start_" onclick="onStart()" value="Начать сортировку">
+<input type="button" name="testSave" id="testSave_" onclick="saveContent_()" value="test save">
 </div>
 <div class="panel" style="min-width: 95%">
 <textarea id="logs" wrap="off" rows=4 placeholder="логи">

@@ -1,12 +1,12 @@
 'use strict';
 //global variables
 var source = []; // входной массив ссылок на картинки
-//var rel = []; // массив структур, обозначающих отношения картинок
-// структура состоит из двух массивов; aMore и aLess в которых хранятся индексы картинок больше и меньше заданной
-var stats=[];
+var stats=[]; //статистика. кол-ва сравнений после каждого прохода массива
 
+//объект, содержащий отношения картинок
 var relations={
-  rel:[],
+  rel:[],// массив структур, обозначающих отношения картинок
+// структура состоит из двух массивов; aMore и aLess в которых хранятся индексы картинок больше и меньше заданной
   
   init:function(count){
     this.rel = [];
@@ -107,69 +107,7 @@ function loadSource () {
   }
   localStorage.setItem('source',JSON.stringify(source));
 };
-/*
-function initRel () {
-  rel = [];
-  source.forEach(function (item, i) {
-    rel.push({aMore: [], aLess: []});
-  });
-};
 
-function uniq (a) {
-  return a.sort().filter(function (item, pos, ary) {
-    return !pos || item !== ary[pos - 1];
-  });
-}
-
-function addRel (aMax, aMin, r) {
-  if (aMin === undefined) { return undefined };
-  if (aMax === undefined) { return undefined };
-  var t1,t2;
-  // 1. прямое добавление
-  if (rel[aMax].aLess.indexOf(aMin) < 0) {
-    rel[aMax].aLess.push(aMin);    
-    t1=1;
-  }
-  if (rel[aMin].aMore.indexOf(aMax) < 0) {
-    rel[aMin].aMore.push(aMax);
-    t2=1;
-  }
-  // все элементы больше макс (rel[aMax].aMore) также больше мин (надо добавить в (rel[aMin].aMore))
-  rel[aMin].aMore.push.apply(rel[aMax].aMore);
-  uniq(rel[aMin].aMore);
-  // все элементы меньше мин также меньше макс
-  rel[aMax].aLess.push.apply(rel[aMin].aLess);
-  uniq(rel[aMax].aLess);
-  // aMax>aMin
-  // элемент макс больше каждого элемента меньше мин
-  if (r !== 1) {
-  uniq(rel[aMin].aLess);
-    rel[aMin].aLess.forEach(function (item) { addRel(aMax, item, 1) });
-  }
-
-  // элемент мин меньше любого элемента больше макс
-  if (r !== 1) {
-  uniq(rel[aMax].aMore);
-    rel[aMax].aMore.forEach(function (item) { addRel(item, aMin, 1) });
-  }
-  check:function (a1, a2) {
-    if (rel[a1].aLess.indexOf(a2) >= 0) { return 1 };
-    if (rel[a1].aMore.indexOf(a2) >= 0) { return -1 };
-    if (rel[a2].aLess.indexOf(a1) >= 0) { return -1 };
-    if (rel[a2].aMore.indexOf(a1) >= 0) { return 1 };
-    return 0;
-  }
-  
-};
-
-function checkRel (a1, a2) {
-  if (rel[a1].aLess.indexOf(a2) >= 0) { return 1 };
-  if (rel[a1].aMore.indexOf(a2) >= 0) { return -1 };
-  if (rel[a2].aLess.indexOf(a1) >= 0) { return -1 };
-  if (rel[a2].aMore.indexOf(a1) >= 0) { return 1 };
-  return 0;
-}
-*/
 function onCellClick (a1, a2, a3, a4) {
   document.getElementById('sort-table').style.zIndex = -1;
   relations.add(a1, a2);
@@ -356,7 +294,7 @@ var sortObj={
     this.a[bestChangeId] = undefined;
     // запускаем цикл заново  
     stats.push([stat.compares,stat.compares2,stat.compares3,stat.compares4]);
-    this.i = this.vTo;
+  return true;       this.i = this.vTo;
   } 
   return true;   
  }, 
@@ -384,7 +322,8 @@ function fillResult (res) {
   document.getElementById('result').value = txt;
   document.getElementById('result1').innerHTML = list;
   
-  document.getElementById('logs').value = stats.toString();
+//  document.getElementById('logs').value = stats.toString();
+  document.getElementById('logs').value = JSON.stringify(relations.rel);
 };
 /*
 function recompileRel(){
@@ -433,6 +372,7 @@ function onStart_ () {
 
     //console.log('we just read ' + value);
   });
+
 /*
   if (localStorage.getItem('rel1') === null) {
     initRel();
@@ -451,3 +391,23 @@ window.addEventListener('keydown',function(e){
 	//}
 	
 	},false)*/
+/*	
+function saveContent(fileContents, fileName)
+{
+    var link = document.createElement('a');
+    link.download = fileName;
+    link.href = 'data:,' + fileContents;
+    link.innerHTML = fileName;
+    link.click();
+    document.getElementById('fixed').appendChild(link);
+}
+/**/
+function saveContent(fileContents, fileName){
+
+var blob = new Blob(["Hello, world!"], {type: "text/plain;charset=utf-8"});
+saveAs(blob, "hello world.txt");
+}
+
+function saveContent_(){
+  saveContent('content','file.txt');
+}  	
