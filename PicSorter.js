@@ -1,13 +1,13 @@
 'use strict';
 //global variables
-var source = []; // входной массив ссылок на картинки
-var stats = []; //статистика. кол-ва сравнений после каждого прохода массива
+let source = []; // входной массив ссылок на картинки
+const stats = []; //статистика. кол-ва сравнений после каждого прохода массива
 
-var testing = true; //тестирование (сравнивает комп) или прод (сравнивает пользователь)
+let testing = false; //тестирование (сравнивает комп) или прод (сравнивает пользователь)
 
 //объект, содержащий отношения картинок
-var relations = {
-    rel: [],/*
+const relations = {
+    rel: [], /*
      массив структур, обозначающих отношения картинок
      структура состоит из двух массивов; aMore и aLess в которых хранятся индексы картинок больше и меньше заданной
      */
@@ -29,7 +29,7 @@ var relations = {
         if ((aMin === undefined) || (aMax === undefined)) {
             return undefined
         }
-        var t1, t2;
+        let t1, t2;
         // 1. прямое добавление
         if (this.rel[aMax].aLess.indexOf(aMin) < 0) {
             this.rel[aMax].aLess.push(aMin);
@@ -46,7 +46,7 @@ var relations = {
         this.rel[aMax].aLess.push.apply(this.rel[aMin].aLess);
         this.uniq(this.rel[aMax].aLess);
         // aMax>aMin
-        var self = this;
+        const self = this;
         // элемент макс больше каждого элемента меньше мин
         if (r !== 1) {
             this.uniq(this.rel[aMin].aLess);
@@ -80,7 +80,7 @@ var relations = {
     }
 };
 
-var stat = {
+const stat = {
     compares: 0,
     compares2: 0,
     compares3: 0,
@@ -123,15 +123,15 @@ var stat = {
         if (t === 4) {
             this.compares4 += 1;
         }
-    this.compares += 1;
+        this.compares += 1;
 
     }
 };
 
 function loadSource() {
-    var sElem = document.getElementById('source');
+    const sElem = document.getElementById('source');
     if (sElem !== null) {
-        var sData = sElem.value;
+        const sData = sElem.value;
         source = sData.split('\n').filter(
             function (item) {
                 if (typeof item === 'string') {
@@ -147,6 +147,7 @@ function loadSource() {
     }
     localStorage.setItem('source', JSON.stringify(source));
 }
+
 function onCellClick(a1, a2, a3, a4) {
     document.getElementById('sort-table').style.zIndex = -1;
     relations.add(a1, a2);
@@ -160,7 +161,7 @@ function onCellClick(a1, a2, a3, a4) {
     if (sortObj.sort_()) {
         sortObj.fin_();
     }
-    if (!testing){
+    if (!testing) {
         fillResult(res);
     }
 }
@@ -172,8 +173,9 @@ function nvl(val_, nullVal) {
         return val_;
     }
 }
+
 function sortUISetPic(idx, a1, a2, a3, a4) {
-    var sElem = document.getElementById(idx);
+    const sElem = document.getElementById(idx);
     if ((typeof source[a1] === 'string') && (source[a1] !== '')) {
         sElem.style.backgroundImage = 'url(' + source[a1] + ')';
         //sElem.innerHTML = '<img class="si" src="'+source[a1]+'">';
@@ -208,11 +210,11 @@ function SortUI(a1, a2, a3, a4) {
 }
 
 function compare(a1, a2, a3, a4, noUI) {
-    var t;
-    var i;
-    var args = [a1, a2, a3, a4];
+    let t;
+    let i;
+    const args = [a1, a2, a3, a4];
     for (i = args.length - 1; i >= 0; i--) {
-        for (var j = args.length - 1; j >= 0; j--) {
+        for (let j = args.length - 1; j >= 0; j--) {
             if (i !== j && args[i] !== undefined && args[j] !== undefined) {
                 t = relations.check(args[i], args[j]);
                 if (t !== 0) {
@@ -228,7 +230,7 @@ function compare(a1, a2, a3, a4, noUI) {
         }
     }
     t = 0;
-    var c = 0;
+    let c = 0;
     for (i = args.length - 1; i >= 0; i--) {
         if (args[i] !== undefined) {
             t = i;
@@ -242,6 +244,11 @@ function compare(a1, a2, a3, a4, noUI) {
         SortUI(args[0], args[1], args[2], args[3]);
     }
     return 0;
+}
+
+function showStat(r,c) {
+    document.getElementById('stat_round').textContent = r;
+    document.getElementById('stat_comp').textContent = c;
 }
 
 var sortObj = {
@@ -283,12 +290,13 @@ var sortObj = {
             for (; this.i >= 0; this.i--) {
                 // ставим наибольший элемент куста в его корень
                 // куст - часть дерева из родителя и его прямых потомков
-                var j = compare(this.a[this.i], this.a[this.i * 3 + 1], this.a[this.i * 3 + 2], this.a[this.i * 3 + 3]);
+                showStat(this.res.length,this.i+1);
+                const j = compare(this.a[this.i], this.a[this.i * 3 + 1], this.a[this.i * 3 + 2], this.a[this.i * 3 + 3]);
                 if (j === 0) {
                     return false;
                 }
                 if (j > 1) {
-                    var t = this.a[this.i];
+                    const t = this.a[this.i];
                     this.a[this.i] = this.a[this.i * 3 - 1 + j];
                     this.a[this.i * 3 - 1 + j] = t;
                 }
@@ -316,30 +324,30 @@ var sortObj = {
             if ((this.len + 1) % 3 > 0) {
                 this.vTo += 1
             }
-            var bestChangeId = this.len - 1;
+            let bestChangeId = this.len - 1;
 
             for (; this.a[bestChangeId] === undefined && bestChangeId > this.vTo; bestChangeId--) {
             }
-            var bestChangeVal = -this.len;
+            let bestChangeVal = -this.len;
             for (var i = this.vTo; i < this.len; i++) {
                 // считаем уровень качества элемента
                 // лучший это тот, у которого больше всего aLess и меньше всего aMore
                 if (this.a[i] === undefined) {
                     continue
                 }
-                var t1 = relations.rel[this.a[i]].aLess;
+                let t1 = relations.rel[this.a[i]].aLess;
                 if (Array.isArray(t1)) {
                     t1 = t1.length
                 } else {
                     t1 = 0
                 }
-                var t2 = relations.rel[this.a[i]].aMore;
+                let t2 = relations.rel[this.a[i]].aMore;
                 if (Array.isArray(t2)) {
                     t2 = t2.length
                 } else {
                     t2 = 0
                 }
-                var chVal = t1 - t2;
+                const chVal = t1 - t2;
                 //var chVal = t2 - t1;
                 // var chVal = relations.rel[a[i]].aLess.length-relations.rel[a[i]].aMore.length;
                 if (chVal >= bestChangeVal) {
@@ -376,8 +384,8 @@ function sort() {
 }
 
 function fillResult(res) {
-    var txt = '';
-    var list = '';
+    let txt = '';
+    let list = '';
     res.forEach(function (item) {
         txt = txt + source[item] + '\n';
         list = list + '<option>' + source[item] + '</option>\n';
@@ -385,30 +393,17 @@ function fillResult(res) {
     document.getElementById('result').value = txt;
     document.getElementById('result1').innerHTML = list;
 
-//  document.getElementById('logs').value = stats.toString();
     document.getElementById('logs').value = JSON.stringify(relations.rel);
 }
-/*
- function recompileRel(){
- rel.forEach(function(item,i){
- uniq(item.aMore);
- item.aMore.forEach(function(item1,i1){rel[item1].aLess.push(i)})
- uniq(item.aLess);
- item.aLess.forEach(function(item1,i1){rel[item1].aMore.push(i)})
- })
- rel.forEach(function(item,i){
- uniq(item.aMore);
- uniq(item.aLess);
- })
- };
- */
+
 function onStart() {
     stat.initStat();
     loadSource();
     relations.init(source.length);
-    var res = sort();
+    const res = sort();
     fillResult(res);
 }
+
 /* eslint-disable no-unused-vars */
 function onStart_() {
     /* eslint-enable no-unused-vars */
@@ -429,56 +424,35 @@ function onStart_() {
             relations.rel = JSON.parse(value);
         }
 
-        var res = sort();
+        const res = sort();
         fillResult(res);
 
         //console.log('we just read ' + value);
     });
-
-    /*
-     if (localStorage.getItem('rel1') === null) {
-     initRel();
-     } else {
-     //localStorage.removeItem('rel');
-     rel = JSON.parse( localStorage.getItem('rel1') );
-     //recompileRel();
-     }*/
-//  var res = sort();
-//  fillResult(res);
 }
-/*
- window.addEventListener('keydown',function(e){
- //if (e.which==106) {
- document.getElementById('sort-table').style.zIndex = -1;
- //}
 
- },false)*/
-/*	
- function saveContent(fileContents, fileName)
- {
- var link = document.createElement('a');
- link.download = fileName;
- link.href = 'data:,' + fileContents;
- link.innerHTML = fileName;
- link.click();
- document.getElementById('fixed').appendChild(link);
+ window.addEventListener('keydown',function(e){
+ if (e.code==='Escape') {
+ document.getElementById('sort-table').style.zIndex = -1;
  }
- /**/
+
+ },false);
+
 function saveContent(fileContents, fileName) {
 
-    var blob = new Blob([fileContents], {type: "text/plain;charset=utf-8"});
+    const blob = new Blob([fileContents], {type: "text/plain;charset=utf-8"});
     saveAs(blob, fileName);
 }
 
 function saveContent_() {
-    saveContent(JSON.stringify({source:source,relations:relations.rel}), 'file.txt');
+    saveContent(JSON.stringify({source: source, relations: relations.rel}), 'file.txt');
 }
 
 function hashCode(str) {
-    var hash = 0;
-    if (str.length == 0) return hash;
-    for (var i = 0; i < str.length; i++) {
-        var char = str.charCodeAt(i);
+    let hash = 0;
+    if (str.length === 0) return hash;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
         hash = ((hash << 5) - hash) + char;
         hash = hash & hash; // Convert to 32bit integer
     }
@@ -486,33 +460,34 @@ function hashCode(str) {
 }
 
 function readSingleFile(e) {
-    var file = e.target.files[0];
+    let file = e.target.files[0];
     if (!file) {
         return;
     }
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var contents = e.target.result;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const contents = e.target.result;
         displayContents(contents);
     };
     reader.readAsText(file);
 }
 
 function displayContents(contents) {
+    let contentObj;
     try {
-        var contentObj = JSON.parse(contents);
+        contentObj = JSON.parse(contents);
     } catch (e) {
         alert('Ошибка разбора файла. Загрузка отменена.' + e.name);
-        return ;
+        return;
     }
-    if (!contentObj.source){
+    if (!contentObj.source) {
         alert('В файле нет необходимых данных. Загрузка отменена.');
-        return ;
+        return;
     }
     //load params
     source = contents.source;
     relations.rel = contents.rel;
-    if (!rel){
+    if (!rel) {
         relations.init(source.length);
     }
 }
