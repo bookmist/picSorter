@@ -29,15 +29,15 @@ const relations = {
         if ((aMin === undefined) || (aMax === undefined)) {
             return undefined
         }
-        let t1, t2;
+        //let t1, t2;
         // 1. прямое добавление
         if (this.rel[aMax].aLess.indexOf(aMin) < 0) {
             this.rel[aMax].aLess.push(aMin);
-            t1 = 1;
+            //t1 = 1;
         }
         if (this.rel[aMin].aMore.indexOf(aMax) < 0) {
             this.rel[aMin].aMore.push(aMax);
-            t2 = 1;
+            //t2 = 1;
         }
         // все элементы больше макс (rel[aMax].aMore) также больше мин (надо добавить в (rel[aMin].aMore))
         this.rel[aMin].aMore.push.apply(this.rel[aMax].aMore);
@@ -149,15 +149,11 @@ function loadSource() {
 }
 
 function onCellClick(a1, a2, a3, a4) {
-    document.getElementById('sort-table').style.zIndex = -1;
+    document.getElementById('sort-table').style.zIndex = '-1';
     relations.add(a1, a2);
     relations.add(a1, a3);
     relations.add(a1, a4);
-    //localStorage.setItem('rel1',JSON.stringify(rel));
-    /*
-     localforage.setItem('rel',JSON.stringify(rel), function(err, value) {
-     console.log(err);
-     });                                                         */
+
     if (sortObj.sort_()) {
         sortObj.fin_();
     }
@@ -204,7 +200,7 @@ function SortUI(a1, a2, a3, a4) {
     sortUISetPic('i3', a3, a2, a1, a4);
     sortUISetPic('i4', a4, a2, a3, a1);
     if (!testing) {
-        document.getElementById('sort-table').style.zIndex = 1;
+        document.getElementById('sort-table').style.zIndex = '1';
     }
     stat.addStat(a1, a2, a3, a4);
 }
@@ -219,11 +215,9 @@ function compare(a1, a2, a3, a4, noUI) {
                 t = relations.check(args[i], args[j]);
                 if (t !== 0) {
                     if (t > 0) {
-                        // args.splice(j,1);
                         args[j] = undefined;
                     } else {
                         args[i] = undefined;
-                        // args.splice(i,1);
                     }
                 }
             }
@@ -251,7 +245,7 @@ function showStat(r,c) {
     document.getElementById('stat_comp').textContent = c;
 }
 
-var sortObj = {
+const sortObj = {
     res: undefined,
     len: undefined,
     a: undefined,
@@ -264,10 +258,10 @@ var sortObj = {
         this.len = source.length;
         this.a = new Array(this.len);
 
-        for (var i = 0; i < this.len; i++) {
+        for (let i = 0; i < this.len; i++) {
             this.a[i] = i;
         }
-        for (i = this.len - 1; i > 0; i--) {
+        for (let i = this.len - 1; i > 0; i--) {
             if (this.a[i] === undefined) {
                 this.len -= 1;
             } else {
@@ -311,7 +305,7 @@ var sortObj = {
             //this.a.splice(0, 1);
             this.a[0] = undefined;
             // находим в основании дерева наилучший элемент для обмена
-            for (var i = this.len - 1; i > 0; i--) {
+            for (let i = this.len - 1; i > 0; i--) {
                 if (this.a[i] === undefined) {
                     this.len -= 1;
                 } else {
@@ -329,7 +323,7 @@ var sortObj = {
             for (; this.a[bestChangeId] === undefined && bestChangeId > this.vTo; bestChangeId--) {
             }
             let bestChangeVal = -this.len;
-            for (var i = this.vTo; i < this.len; i++) {
+            for (let i = this.vTo; i < this.len; i++) {
                 // считаем уровень качества элемента
                 // лучший это тот, у которого больше всего aLess и меньше всего aMore
                 if (this.a[i] === undefined) {
@@ -433,7 +427,7 @@ function onStart_() {
 
  window.addEventListener('keydown',function(e){
  if (e.code==='Escape') {
- document.getElementById('sort-table').style.zIndex = -1;
+ document.getElementById('sort-table').style.zIndex = '-1';
  }
 
  },false);
@@ -446,17 +440,6 @@ function saveContent(fileContents, fileName) {
 
 function saveContent_() {
     saveContent(JSON.stringify({source: source, relations: relations.rel}), 'file.txt');
-}
-
-function hashCode(str) {
-    let hash = 0;
-    if (str.length === 0) return hash;
-    for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32bit integer
-    }
-    return hash;
 }
 
 function readSingleFile(e) {
@@ -485,11 +468,13 @@ function displayContents(contents) {
         return;
     }
     //load params
-    source = contents.source;
-    relations.rel = contents.rel;
-    if (!rel) {
+    source = contentObj.source;
+    relations.rel = contentObj.rel;
+    if (!relations.rel) {
         relations.init(source.length);
     }
+    const res = sort();
+    fillResult(res);
 }
 
 document.getElementById('file-input')
