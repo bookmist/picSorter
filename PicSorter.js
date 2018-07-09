@@ -193,8 +193,8 @@ function sortUISetPic(idx, a1, a2, a3, a4) {
     const sElem = document.getElementById(idx);
     if ((typeof source[a1] === 'string') && (source[a1] !== '')) {
         //sElem.style.backgroundImage = 'url(' + source[a1] + ')';
-        //sElem.innerHTML = '<img class="si" src="'+source[a1]+'">';
-        sElem.innerHTML = source[a1] + '&nbsp;';
+        sElem.innerHTML = '<img class="si" src="'+source[a1]+'">';
+        //sElem.innerHTML = source[a1] + '&nbsp;';
         sElem.onclick = function x() {
             onCellClick(a1, a2, a3, a4)
         };
@@ -481,12 +481,18 @@ function displayContents(contents) {
     }
     //load params
     source = contentObj.source;
-    relations.rel = contentObj.rel;
+    relations.rel = contentObj.relations;
     if (!relations.rel) {
+    	alert('reinit relations');
         relations.init(source.length);
     }
-    const res = sortObj.sort();
-    fillResult(res);
+    setSource('source',source);
+    sortObj.init_(source);
+    sortObj.sort_();
+}
+
+function setSource(id,arr) {
+  document.getElementById(id).value = arr.join('\n');
 }
 
 function onCreateCmd(){
@@ -498,9 +504,11 @@ function onCreateCmd(){
           return 'rename ' + shortName + ' '+(idx+1).toString().padStart(l, '0')+'_'+ shortName;
       }
   );
+  /*
   const sElem = document.getElementById('result');
   sElem.value = newNames.join('\n');
-
+  */
+  setSource('result',newNames);
 }
 
 document.getElementById('file-input')
