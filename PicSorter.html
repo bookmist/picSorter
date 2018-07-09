@@ -96,11 +96,12 @@
             <input type="button" name="start" id="continue_" onclick="onContinue()" value="Продолжить сортировку">
             <br>
             <input type="button" name="testSave" id="testSave_" onclick="saveContent_()" value="Сохранить сортировку"><br>
-            Загрузить сортировку.<input type="file" id="file-input"/>
+            Загрузить сортировку.<input type="file" id="file-input"/><br>
             <script>
                 document.getElementById('file-input')
                     .addEventListener('change', readSingleFile, false);
             </script>
+            <input type="button" name="createCmd" id="createCmd_" onclick="onCreateCmd()" value="Сгенерить батник">
         </div>
         <div class="panel" style="min-width: 95%">
             Логи<br>

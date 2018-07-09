@@ -1,4 +1,22 @@
 'use strict';
+
+/* todo
+* Задачи для сортировщика.
+1. Выделить сущность сортировка. Составляющие - список объектов и соотношения. + имя
+2. возможность задать имя сортировки
+3. хранение сортировок в локалСтораже
++ 4. возможность записать сортировку в файл и прочитать из файла
+5. добавление file:/// к именам файлов на входе
+6. генератор батника для переименования файлов на выходе.
+7. возможность добавлять и удалять файлы из списка в процессе сортировки
++ 8. возможность прервать сортировку и вывести меню
++ 9. отображение прогресса сортировки
+
+
+Максимальное кол-во сравнений деревом
+1 круг 1/4 длины массива
+2 круг 1/4 длины массива / 3
+* */
 //global variables
 let source = []; // входной массив ссылок на картинки
 const stats = []; //статистика. кол-ва сравнений после каждого прохода массива
@@ -128,38 +146,39 @@ const stat = {
     }
 };
 
-function loadSource() {
-    const sElem = document.getElementById('source');
-    if (sElem !== null) {
-        const sData = sElem.value;
-        source = sData.split('\n').filter(
-            function (item) {
-                if (typeof item === 'string') {
-                    if (item !== '') {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        );
-    } else {
-        alert('error!');
+function getSource(id) {
+    const sElem = document.getElementById(id);
+    if (sElem === null) {
+        alert('Не найден элемент с id source');
+        return [];
     }
+    const sData = sElem.value;
+    if (typeof sData !== 'string') {
+        return [];
+    }
+    return sData.split('\n').filter(item => ((typeof item === 'string') && (item !== '')));
+}
+
+function loadSource() {
+    source = getSource('source');
     localStorage.setItem('source', JSON.stringify(source));
 }
 
-function onCellClick(a1, a2, a3, a4) {
+function showSortTable() {
+    document.getElementById('sort-table').style.zIndex = '1';
+}
+
+function hideSortTable() {
     document.getElementById('sort-table').style.zIndex = '-1';
+}
+
+function onCellClick(a1, a2, a3, a4) {
+    hideSortTable();
     relations.add(a1, a2);
     relations.add(a1, a3);
     relations.add(a1, a4);
 
-    if (sortObj.sort_()) {
-        sortObj.fin_();
-    }
-    if (!testing) {
-        fillResult(sortObj.res);
-    }
+    sortObj.continueSort();
 }
 
 function nvl(val_, nullVal) {
@@ -173,7 +192,7 @@ function nvl(val_, nullVal) {
 function sortUISetPic(idx, a1, a2, a3, a4) {
     const sElem = document.getElementById(idx);
     if ((typeof source[a1] === 'string') && (source[a1] !== '')) {
-        sElem.style.backgroundImage = 'url(' + source[a1] + ')';
+        //sElem.style.backgroundImage = 'url(' + source[a1] + ')';
         //sElem.innerHTML = '<img class="si" src="'+source[a1]+'">';
         sElem.innerHTML = source[a1] + '&nbsp;';
         sElem.onclick = function x() {
@@ -200,7 +219,7 @@ function SortUI(a1, a2, a3, a4) {
     sortUISetPic('i3', a3, a2, a1, a4);
     sortUISetPic('i4', a4, a2, a3, a1);
     if (!testing) {
-        document.getElementById('sort-table').style.zIndex = '1';
+        showSortTable();
     }
     stat.addStat(a1, a2, a3, a4);
 }
@@ -251,10 +270,21 @@ const sortObj = {
     a: undefined,
     i: undefined,
     vTo: undefined,
-    /*
+
     onSortFinish:function(){},
     onSortStep:function(){},
-*/
+
+    sortFinish:function(){
+        if (typeof(this.onSortFinish) ==='function'){
+            this.onSortFinish();
+        }
+    },
+    sortStep:function(){
+        if (typeof(this.onSortStep)==='function'){
+            this.onSortStep();
+        }
+    },
+
     init_: function (source) {
         this.res = [];
         // заполняем массив индексов для сортировки
@@ -363,21 +393,27 @@ const sortObj = {
 
             // запускаем цикл заново
             this.i = this.vTo;
+            this.sortStep();
         }
+        this.sortFinish();
         return true;
     },
 
     continueSort:function(){
         this.sort_();
+        if (!testing) {
+            fillResult(this.res);
+        }
+    },
+
+    sort:function sort(source_) {
+        stat.initStat();
+        relations.init(source.length);
+        this.init_(source);
+        this.sort_();
     }
 };
 
-function sort() {
-    sortObj.init_(source);
-    if (sortObj.sort_()) {
-    }
-    return sortObj.res;
-}
 
 function fillResult(res) {
     let txt = '';
@@ -393,52 +429,17 @@ function fillResult(res) {
 }
 
 function onStart() {
-    stat.initStat();
     loadSource();
-    relations.init(source.length);
-    const res = sort();
-    fillResult(res);
-    stat.showStat();
+    sortObj.sort();
 }
 
 function onContinue() {
-    //stat.initStat();
-    //loadSource();
-    //relations.init(source.length);
-    const res = sort();
-    fillResult(res);
-}
-
-/* eslint-disable no-unused-vars */
-function onStart_() {
-    /* eslint-enable no-unused-vars */
-
-    if (localStorage.getItem('source') === null) {
-        loadSource();
-    } else {
-        source = JSON.parse(localStorage.getItem('source'));
-    }
-    localforage.getItem('rel', function (err, value) {
-        if (value === null) {
-            if (localStorage.getItem('rel1') === null) {
-                relations.init();
-            } else {
-                relations.rel = JSON.parse(localStorage.getItem('rel1'));
-            }
-        } else {
-            relations.rel = JSON.parse(value);
-        }
-
-        const res = sort();
-        fillResult(res);
-
-        //console.log('we just read ' + value);
-    });
+    sortObj.continueSort()
 }
 
  window.addEventListener('keydown',function(e){
  if (e.code==='Escape') {
- document.getElementById('sort-table').style.zIndex = '-1';
+     hideSortTable();
  }
 
  },false);
@@ -450,13 +451,13 @@ function saveContent(fileContents, fileName) {
 }
 
 function saveContent_() {
-    saveContent(JSON.stringify({source: source, relations: relations.rel}), 'file.txt');
+    saveContent(JSON.stringify({source: source, relations: relations.rel}), 'SortInfo.txt');
 }
 
 function readSingleFile(e) {
     let file = e.target.files[0];
     if (!file) {
-        return;
+        return undefined;
     }
     const reader = new FileReader();
     reader.onload = function (e) {
@@ -484,8 +485,22 @@ function displayContents(contents) {
     if (!relations.rel) {
         relations.init(source.length);
     }
-    const res = sort();
+    const res = sortObj.sort();
     fillResult(res);
+}
+
+function onCreateCmd(){
+  let names = getSource('result');
+  let l = names.length;
+  l = l.toString().length;
+  let newNames = names.map(function (name,idx) {
+          const shortName = name.substr(name.lastIndexOf('\\'));
+          return 'rename ' + shortName + ' '+(idx+1).toString().padStart(l, '0')+'_'+ shortName;
+      }
+  );
+  const sElem = document.getElementById('result');
+  sElem.value = newNames.join('\n');
+
 }
 
 document.getElementById('file-input')
