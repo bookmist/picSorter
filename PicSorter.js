@@ -158,7 +158,7 @@ function onCellClick(a1, a2, a3, a4) {
         sortObj.fin_();
     }
     if (!testing) {
-        fillResult(res);
+        fillResult(sortObj.res);
     }
 }
 
@@ -251,8 +251,11 @@ const sortObj = {
     a: undefined,
     i: undefined,
     vTo: undefined,
-
-    init_: function () {
+    /*
+    onSortFinish:function(){},
+    onSortStep:function(){},
+*/
+    init_: function (source) {
         this.res = [];
         // заполняем массив индексов для сортировки
         this.len = source.length;
@@ -363,16 +366,15 @@ const sortObj = {
         }
         return true;
     },
-    fin_: function () {
-        stat.showStat();
-        fillResult(this.res)
+
+    continueSort:function(){
+        this.sort_();
     }
 };
 
 function sort() {
-    sortObj.init_();
+    sortObj.init_(source);
     if (sortObj.sort_()) {
-        sortObj.fin_();
     }
     return sortObj.res;
 }
@@ -394,6 +396,15 @@ function onStart() {
     stat.initStat();
     loadSource();
     relations.init(source.length);
+    const res = sort();
+    fillResult(res);
+    stat.showStat();
+}
+
+function onContinue() {
+    //stat.initStat();
+    //loadSource();
+    //relations.init(source.length);
     const res = sort();
     fillResult(res);
 }
