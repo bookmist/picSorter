@@ -5,17 +5,10 @@
 1. Выделить сущность сортировка. Составляющие - список объектов и соотношения. + имя
 2. возможность задать имя сортировки
 3. хранение сортировок в локалСтораже
-+ 4. возможность записать сортировку в файл и прочитать из файла
-5. добавление file:/// к именам файлов на входе
-6. генератор батника для переименования файлов на выходе.
++5. добавление file:/// к именам файлов на входе
 7. возможность добавлять и удалять файлы из списка в процессе сортировки
-+ 8. возможность прервать сортировку и вывести меню
-+ 9. отображение прогресса сортировки
-
-
-Максимальное кол-во сравнений деревом
-1 круг 1/4 длины массива
-2 круг 1/4 длины массива / 3
+8. Перестановка картинок в удобном порядке
+9. масштабирование картинок
 * */
 //global variables
 let source = []; // входной массив ссылок на картинки
@@ -406,7 +399,7 @@ const sortObj = {
         }
     },
 
-    sort:function sort(source_) {
+    sort:function sort() {
         stat.initStat();
         relations.init(source.length);
         this.init_(source);
@@ -416,15 +409,8 @@ const sortObj = {
 
 
 function fillResult(res) {
-    let txt = '';
-    let list = '';
-    res.forEach(function (item) {
-        txt = txt + source[item] + '\n';
-        list = list + '<option>' + source[item] + '</option>\n';
-    });
-    document.getElementById('result').value = txt;
-    document.getElementById('result1').innerHTML = list;
-
+    setSource('result',res.map(item => source[item]));
+    document.getElementById('result1').innerHTML = res.map(item => '<option>' + source[item] + '</option>').join('\n');
     document.getElementById('logs').value = JSON.stringify(relations.rel);
 }
 
@@ -504,11 +490,11 @@ function onCreateCmd(){
           return 'rename ' + shortName + ' '+(idx+1).toString().padStart(l, '0')+'_'+ shortName;
       }
   );
-  /*
-  const sElem = document.getElementById('result');
-  sElem.value = newNames.join('\n');
-  */
   setSource('result',newNames);
+}
+
+function  onAddFile(){
+    setSource('source',getSource('source').map(item => 'file:///'+item));
 }
 
 document.getElementById('file-input')
